@@ -35,8 +35,21 @@ fi
 
 make
 
-./fasttext supervised -input "${DATADIR}/dbpedia.train" -output "${RESULTDIR}/dbpedia" -dim 10 -lr 0.1 -wordNgrams 2 -minCount 1 -bucket 10000000 -epoch 5 -thread 4
+# Incrementally adding the training size
+length=$(wc -l "${DATADIR}/dbpedia.train" | awk '{print $1}')
+echo $length
+total=5
+for (( i = 0; i < total; i++ )); do
+	#statements
+	scale=$(bc <<< "scale=2;(($i+1)/$total)*$length")
+	scale=${scale%.*}
+	head -n $scale "${DATADIR}/dbpedia.train" > "${DATADIR}/first$scale.train"
 
-./fasttext test "${RESULTDIR}/dbpedia.bin" "${DATADIR}/dbpedia.test"
+	# Training and Testing
+	echo "First $scale lines of training data ..."
+	./fasttext supervised -input "${DATADIR}/first$scale.train" -output "${RESULTDIR}/dbpedia" -dim 10 -lr 0.1 -wordNgrams 2 -minCount 1 -bucket 10000000 -epoch 5 -thread 4
 
-./fasttext predict "${RESULTDIR}/dbpedia.bin" "${DATADIR}/dbpedia.test" > "${RESULTDIR}/dbpedia.test.predict"
+	./fasttext test "${RESULTDIR}/dbpedia.bin" "${DATADIR}/dbpedia.test"
+
+	./fasttext predict "${RESULTDIR}/dbpedia.bin" "${DATADIR}/dbpedia.test" > "${RESULTDIR}/dbpedia.test.predict"
+done
