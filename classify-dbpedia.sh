@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # Copyright (c) 2016-present, Facebook, Inc.
+# Updated by Navid Rezaei to experience wih smaller training sizes
 # All rights reserved.
 #
 # This source code is licensed under the BSD-style license found in the
